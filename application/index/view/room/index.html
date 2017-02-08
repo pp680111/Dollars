@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+		<meta charset="utf-8">
+	    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <title></title>
+	    <link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+	    {import type='css' file='/static/css/room.css'}
+	</head>
+	<body>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-3">
+					<div class="userlist totalBorder">
+						<h4>Online</h4>
+						<ul id="userList">
+						</ul>
+					</div>
+				</div>
+				<div class="col-md-9">
+					<div class="msgArea totalBorder" id="msgArea">
+						<ul class="msgList" id="messageList">
+							
+						</ul>
+					</div>
+					<div class="inputArea totalBorder">
+						<textarea class="inputTextArea totalBorder" id="inputTextArea"></textarea>
+					</div>
+					<button type="button" class="btn btn-default" id="sendMsg" onclick="send()">发送</button>
+					<button type="button" class="btn btn-default" id="userSetup">个性化设置</button>
+					<!--  将当前用户名从服务器传过来并隐藏起来-->
+					<input type="hidden" value="{$username}" id="currentUsername">
+				</div>
+				<div class="col-md-3 userSetupLayer">
+					<div class="userSetup totalBorder">
+						<div class="setBorderColor">
+							<h4>选择边框颜色</h4>
+							<table class="colorTable">
+								<tr>
+									<td><span id="red"></span></td>
+									<td><span id="yellow"></span></td>
+									<td><span id="blue"></span></td>
+								</tr>
+								<tr>
+									<td><span id="green"></span></td>
+									<td><span id="aqua"></span></td>
+									<td><span id="silver"></span></td>
+								</tr>
+								<tr>
+									<td><span id="violet"></span></td>
+									<td><span id="white"></span></td>
+								</tr>
+							</table>
+						</div>
+
+						<div class="selectAvatar">
+							<h4>选择头像</h4>
+							<ul class="avatarList">
+								<li><img class="avatar" src="/static/img/avatar-bakyura.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-bakyura-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-eight.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-gaki-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-gg.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-junsui-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-kakka.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-kanra.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-kanra-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-kuromu-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-kyo-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-rotchi-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-saki-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-san-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-setton.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-sharo-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-tanaka.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-tanaka-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-ya-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-zaika.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-zaika-2x.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-zawa.svg"></img></li>
+								<li><img class="avatar" src="/static/img/avatar-kyo-2x.svg"></img></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+    	<script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+    	<script>
+		  	$(function(){
+		  		var height = document.documentElement.clientHeight;
+		  		$(".userlist").css("height",height);
+		  		$(".msgArea").css("height",height * 0.75);
+		  		$(".inputArea").css("height",height * 0.15);
+		  		$(".userSetup").css("height",height);
+
+		  		var colorTableWidth = parseFloat($(".setBorderColor").css("width")) * 0.9;
+		  		$(".colorTable").css("width",colorTableWidth);
+		  	})
+
+		  	$("#inputTextArea").bind("keydown",function(e)
+				{
+					if(e.keyCode == 13)
+					{
+						send();
+						e.preventDefault();
+					}
+				});
+
+		  	$("#inputTextArea").bind("input",function()
+		  	{
+		  		if($(this).val().length > 256)
+		  		{
+		  			alert("输入的内容超过了256个字符的限制！");
+		  			$(this).val($(this).val().substr(0,256));
+		  		}
+		  	});
+
+		  	$(".colorTable span").bind("click",function()
+		  	{
+		  			$(".totalBorder").css("border","3px solid " + $(this).css("background-color"));
+		  	});
+
+		  	$(".avatarList .avatar").bind('click',function()
+		  	{	
+		  		var avatar = $(this).attr("src");
+		  		avatar = avatar.substr(19).split('.')[0];
+		  		var data = {'type':'changeAvatar','content':avatar};
+		  		sendMsg(data);
+		  		alert("更换头像成功");
+		  	});
+
+		  	$("#userSetup").click(function()
+		  	{
+		  		if(parseInt($(".userSetupLayer").css('left')) < document.body.clientWidth)
+		  			$(".userSetupLayer").animate({left:"100%"});
+		  		else $(".userSetupLayer").animate({left:"75%"});
+		  	});
+		  	//下面的是处理websocket的相关函数
+		  	var uname = document.getElementById("currentUsername").value;
+		  	var ws = new WebSocket("ws://127.0.0.1:8080");
+		  	ws.onopen = function()
+		  	{
+		  		var data = "系统消息：建立连接成功";
+		  		listMsg(data);
+		  	};
+
+		  	ws.onmessage = function(e)
+		  	{
+		  		var msg = JSON.parse(e.data);
+		  		var sender,user_name,name_list,change_type,avatar,avatar_list;
+		  		switch(msg.type)
+		  		{
+		  			case 'system':
+		  				data = '系统消息:' + msg.content;
+		  				listMsg(data);
+		  				break;
+		  			case 'user':
+		  				listMsg(msg.content,msg.from,msg.avatar);
+		  				return;
+		  			case 'handshake':
+		  				var user_info = {'type':'login','content':uname,'avatar':'bakyura'};
+		  				sendMsg(user_info);
+		  				return;
+		  			case 'login':
+		  			case 'logout':
+		  			case 'avatarChange':
+		  				user_name = msg.content;
+		  				name_list = msg.user_list;
+		  				change_type = msg.type;
+		  				avatar_list = msg.avatar_list;
+		  				dealUser(user_name,change_type,name_list,avatar_list);
+		  				return;
+		  		}
+		  	};
+
+		  	ws.onerror = function()
+		  	{
+		  		var data = "系统消息 : 出错了,请退出重试.";
+	        	listMsg(data);
+		  	}
+
+
+		  	function send(){
+		  		var msg_box = document.getElementById('inputTextArea');
+		  		var content = msg_box.value;
+		  		var reg = new RegExp("\r\n","g");
+		  		content = content.replace(reg,"");
+		  		//这里直接创建了json对象而不是js的数组
+		  		var msg = {'content':content.trim(),'type':'user'};
+		  		sendMsg(msg);
+		  		msg_box.value = "";
+		  	}
+
+		  	//将消息内容添加到输出框中，并将滚动条滚动到最下方
+		  	function listMsg(data,sender,avatar)
+		  	{
+		  		var msgList = document.getElementById("messageList");
+		  		var msgArea = document.getElementById("msgArea");
+		  		var msg = document.createElement("li");
+
+		  		if(typeof(sender) == 'undefined')
+		  			msg.innerHTML = data;
+		  		else{
+		  			if(data.length == 0)
+		  				msg.innerHTML = "<table class='avatarTable'><tr><td><img class='avatar-small' src='/static/img/avatar-" + avatar + ".svg'></td></tr><tr><td>" + sender + "</td></tr></table><div class='textbox'><div class='arrow'></div>&nbsp</div>";
+		  			else msg.innerHTML = "<table class='avatarTable'><tr><td><img class='avatar-small' src='/static/img/avatar-" + avatar + ".svg'></td></tr><tr><td>" + sender + "</td></tr></table><div class='textbox'><div class='arrow'></div>" + data + "</div>";
+		  		}
+		  		msgList.appendChild(msg);
+		  		msgArea.scrollTop = msgArea.scrollHeight;
+		  	}
+
+		  	//处理用户登录信息
+		  	function dealUser(user_name,type,name_list,avatar_list)
+		  	{
+		  		var user_list = document.getElementById("userList");
+		  		//var user_num = document.getElementById("user_num");
+		  		while(user_list.hasChildNodes())
+		  		{
+		  			user_list.removeChild(user_list.firstChild);
+		  		}
+		  		for(var index in name_list)
+		  		{
+		  			var user = document.createElement("li");
+		  			user.innerHTML = "<img class='avatar' src='/static/img/avatar-" + avatar_list[index] + ".svg'>&nbsp;&nbsp;" + name_list[index];
+		  			user_list.appendChild(user);
+		  		}
+
+		  		
+		  		//user_num.innerHTML = name_list.length;
+		  		user_list.scrollTop = user_list.scrollHeight;
+		  		//当接收到的是改变头像的信息时就跳过下面的文字输出代码
+		  		if(type == 'avatarChange')
+		  			return;
+		  		var change = type == 'login' ? '上线' : '下线';
+
+		  		var data = '系统消息：' + user_name + '已' + change;
+		  		listMsg(data);
+
+		  		
+		  	}
+
+		  	function sendMsg(msg)
+		  	{
+		  		var data = JSON.stringify(msg);
+		  		ws.send(data);
+		  	}
+
+ 		</script>
+ 		
+	</body>
+</html>
